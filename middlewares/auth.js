@@ -3,9 +3,10 @@ require("dotenv").config();
 
 exports.auth = async (req, res, next) => {
 	try {
-		// Extract token
+		// Extract token from the Authorization header
 		const authHeader = req.header("Authorization");
 
+		// Check if Authorization header is present and formatted correctly
 		if (!authHeader || !authHeader.startsWith("Bearer ")) {
 			return res.status(401).json({
 				success: false,
@@ -13,8 +14,9 @@ exports.auth = async (req, res, next) => {
 			});
 		}
 
+		// Extract the token from the header
 		const token = authHeader.split(" ")[1];
-
+		// Check if token is present
 		if (!token) {
 			return res.status(401).json({
 				success: false,
@@ -22,18 +24,20 @@ exports.auth = async (req, res, next) => {
 			});
 		}
 
-		// Verify token
+		// Verify the token
 		try {
 			const decoded = jwt.verify(token, process.env.JWT_SECRET);
-			req.user = decoded;
-			next();
+			req.user = decoded; // Attach the decoded user info to the request object
+			next(); // Proceed to the next middleware or route handler
 		} catch (err) {
+			// Handle specific JWT errors
 			if (err.name === "TokenExpiredError") {
 				return res.status(401).json({
 					success: false,
 					message: "Token has expired",
 				});
 			}
+			// Handle invalid token error
 			return res.status(401).json({
 				success: false,
 				message: "Invalid token",

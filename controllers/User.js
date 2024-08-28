@@ -6,7 +6,7 @@ const cloudinaryUpload = require("../utils/cloudinaryUpload");
 
 exports.signup = async (req, res) => {
 	try {
-		// fetch data
+		// Fetch data from request body
 		const {
 			name,
 			email,
@@ -32,6 +32,7 @@ exports.signup = async (req, res) => {
 		// 	bio
 		// );
 
+		// Check if all required fields are provided
 		if (
 			!name ||
 			!email ||
@@ -42,13 +43,13 @@ exports.signup = async (req, res) => {
 			!dob ||
 			!resume
 		) {
-			return res.status(403).json({
+			return res.status(400).json({
 				success: false,
 				message: "All Fields are required",
 			});
 		}
 
-		// checking if both the password matches or not
+		// Verify if passwords match
 
 		if (password !== confirmPassword) {
 			return res.status(400).json({
@@ -58,11 +59,11 @@ exports.signup = async (req, res) => {
 			});
 		}
 
-		// checking if user already exists
+		// Check if user already exists
 		const userExist = await User.findOne({ email });
 
 		if (userExist) {
-			return res.status(401).json({
+			return res.status(409).json({
 				success: false,
 				message: "User Already Exists",
 			});
@@ -79,7 +80,7 @@ exports.signup = async (req, res) => {
 			process.env.CLOUDINARY_FOLDER
 		);
 
-		// creating a DB entry
+		// Create a new user entry in the database
 
 		const user = await User.create({
 			name,
@@ -94,7 +95,7 @@ exports.signup = async (req, res) => {
 
 		// return response
 
-		return res.status(200).json({
+		return res.status(201).json({
 			success: true,
 			message: "User Registered Successfully",
 			user,
@@ -111,17 +112,18 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
 	try {
-		// fetch email and password
+		// Fetch email and password from request body
 		const { email, password } = req.body;
 
+		// Check if email and password are provided
 		if (!email || !password) {
-			return res.status(403).json({
+			return res.status(400).json({
 				success: false,
 				message: "Email and Password are required Field",
 			});
 		}
 
-		// checking if user with the email exists
+		// Check if user with the provided email exists
 		let user = await User.findOne({ email });
 
 		if (!user) {
@@ -131,7 +133,7 @@ exports.login = async (req, res) => {
 			});
 		}
 
-		// comparing password
+		// Compare provided password with stored hashed password
 		if (!bcrypt.compare(user.password, password)) {
 			return res.status(401).json({
 				success: false,
@@ -139,8 +141,7 @@ exports.login = async (req, res) => {
 			});
 		}
 
-		// if user exist and password is correct. then, return a JWT token for future authentication
-		// creating Token
+		// Create a JWT token for future authentication
 		const jwtPayload = {
 			id: user._id,
 			email: user.email,
@@ -154,6 +155,7 @@ exports.login = async (req, res) => {
 		user.token = token;
 		user.password = undefined;
 
+		// Return success response with user data and token
 		return res.status(200).json({
 			success: true,
 			message: "Login Successfull",
@@ -172,18 +174,21 @@ exports.login = async (req, res) => {
 
 exports.updateUserDetail = async (req, res) => {
 	try {
+		// Fetch updated user data from request body
 		const { name, dob, address, bio } = req.body;
 
 		const id = req.user.id;
 		const user = await User.findById(id);
 
+		// Check if user exists in the database
 		if (!user) {
-			return res.status(500).json({
+			return res.status(404).json({
 				success: false,
 				message: "User does not exist",
 			});
 		}
 
+		// Update user details
 		if (user.name !== name) {
 			user.name = name;
 		}
@@ -200,8 +205,10 @@ exports.updateUserDetail = async (req, res) => {
 			user.bio = bio;
 		}
 
+		// Save updated user data
 		const updatedUser = await user.save();
 
+		// Return success response with updated user data
 		return res.status(200).json({
 			success: true,
 			message: "User Data Updated successfully",
