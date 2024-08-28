@@ -19,7 +19,7 @@ app.use(
 	cors({
 		origin: [
 			"http://localhost:3000",
-			"https://kudosware-seven.vercel.app/",
+			"https://kudosware-seven.vercel.app",
 		],
 		credentials: true,
 	})
