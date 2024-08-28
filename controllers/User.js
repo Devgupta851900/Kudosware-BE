@@ -174,8 +174,6 @@ exports.updateUserDetail = async (req, res) => {
 	try {
 		const { name, dob, address, bio } = req.body;
 
-		const resume = req.files?.resume;
-
 		const id = req.user.id;
 		const user = await User.findById(id);
 
@@ -200,15 +198,6 @@ exports.updateUserDetail = async (req, res) => {
 
 		if (user.bio !== bio) {
 			user.bio = bio;
-		}
-
-		if (resume && user.resume !== resume) {
-			const uploadedResume = await cloudinaryUpload(
-				resume,
-				process.env.CLOUDINARY_FOLDER
-			);
-
-			user.resume = uploadedResume.secure_url;
 		}
 
 		const updatedUser = await user.save();
