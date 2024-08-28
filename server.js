@@ -17,7 +17,10 @@ const userRoutes = require("./routes/userRoutes");
 app.use(express.json());
 app.use(
 	cors({
-		origin: "http://localhost:3000",
+		origin: [
+			"http://localhost:3000",
+			"https://vercel.com/dev-guptas-projects-5b179fba/kudosware",
+		],
 		credentials: true,
 	})
 );
